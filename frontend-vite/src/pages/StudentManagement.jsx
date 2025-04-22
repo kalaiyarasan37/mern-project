@@ -4,7 +4,6 @@ import MainLayout from '../components/MainLayout';
 
 const StudentManagement = () => {
   const [students, setStudents] = useState([]);
-  const [resumeFile, setResumeFile] = useState({});
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,12 +22,10 @@ const StudentManagement = () => {
       if (Array.isArray(res.data)) {
         setStudents(res.data);
       } else {
-        console.error('Expected array of students, got:', res.data);
         setStudents([]);
       }
     } catch (err) {
       console.error('Error fetching students:', err);
-      setStudents([]);
     }
   };
 
@@ -54,7 +51,6 @@ const StudentManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-
     try {
       if (editingId) {
         await axios.put(`http://localhost:5000/api/students/${editingId}`, formData, {
@@ -73,14 +69,14 @@ const StudentManagement = () => {
   };
 
   const handleEdit = (id) => {
-    const selectedStudent = students.find((s) => s._id === id);
-    if (selectedStudent) {
+    const selected = students.find((s) => s._id === id);
+    if (selected) {
       setFormData({
-        name: selectedStudent.name,
-        email: selectedStudent.email,
-        loginId: selectedStudent.loginId,
+        name: selected.name,
+        email: selected.email,
+        loginId: selected.loginId,
         password: '',
-        role: selectedStudent.role,
+        role: selected.role,
       });
       setEditingId(id);
     }
@@ -100,20 +96,18 @@ const StudentManagement = () => {
 
   const handleResumeUpload = async (id, file) => {
     if (!file) return;
-
-    const formData = new FormData();
-    formData.append('resume', file);
+    const data = new FormData();
+    data.append('resume', file);
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5000/api/students/${id}/resume`, formData, {
+      await axios.post(`http://localhost:5000/api/students/${id}/resume`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
-
-      fetchStudents(); // Refresh list
+      fetchStudents();
     } catch (err) {
       console.error('Resume upload failed:', err);
     }
@@ -176,7 +170,7 @@ const StudentManagement = () => {
           <div className="flex gap-4">
             <button
               type="submit"
-              className="bg-[#007f8f] text-white px-6 py-3 rounded font-semibold hover:bg-[#006673] transition duration-200"
+              className="bg-[#007f8f] text-white px-6 py-3 rounded font-semibold hover:bg-[#006673]"
             >
               {editingId ? 'Update' : 'Register'}
             </button>
@@ -197,7 +191,7 @@ const StudentManagement = () => {
         {students.length === 0 ? (
           <p className="text-gray-500 italic">No students registered yet.</p>
         ) : (
-          <table className="w-full border text-left text-sm">
+          <table className="w-full border text-sm">
             <thead className="bg-[#e0f7fa] text-[#007f8f]">
               <tr>
                 <th className="p-3 border">Name</th>
@@ -217,17 +211,19 @@ const StudentManagement = () => {
                   <td className="p-3 border capitalize">{student.role}</td>
                   <td className="p-3 border">
                     {student.resume ? (
-                      <a
-                        href={`http://localhost:5000/${student.resume}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                        download
-                      >
-                        Download
-                      </a>
+                      <div className="flex flex-col gap-1">
+                        <a
+                          href={`http://localhost:5000/${student.resume}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                          download
+                        >
+                          Download
+                        </a>
+                      </div>
                     ) : (
-                      'Not Uploaded'
+                      <span className="italic text-gray-500">Not Uploaded</span>
                     )}
                     <input
                       type="file"

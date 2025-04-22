@@ -1,7 +1,12 @@
-# Frontend (React)
-/client/node_modules/
-/client/build/
+# Frontend
+frontend/           # Explicitly ignore deleted folder
+frontend-vite/dist/ # Ignore build files (if using Vite)
 
-# Backend (Node.js)
-/backend/node_modules/
-/backend/.env
+# Backend
+backend/node_modules/
+backend/.env
+
+# Global
+node_modules/
+.env
+.DS_Store

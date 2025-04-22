@@ -1,0 +1,163 @@
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex eeb59d4..f08f522 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -1,7 +1,12 @@[m
+[31m-# Frontend (React)[m
+[31m-/client/node_modules/[m
+[31m-/client/build/[m
+[32m+[m[32m# Frontend[m
+[32m+[m[32mfrontend/           # Explicitly ignore deleted folder[m
+[32m+[m[32mfrontend-vite/dist/ # Ignore build files (if using Vite)[m
+ [m
+[31m-# Backend (Node.js)[m
+[31m-/backend/node_modules/[m
+[31m-/backend/.env[m
+\ No newline at end of file[m
+[32m+[m[32m# Backend[m
+[32m+[m[32mbackend/node_modules/[m
+[32m+[m[32mbackend/.env[m
+[32m+[m
+[32m+[m[32m# Global[m
+[32m+[m[32mnode_modules/[m
+[32m+[m[32m.env[m
+[32m+[m[32m.DS_Store[m
+\ No newline at end of file[m
+[1mdiff --git a/backend/controllers/studentController.js b/backend/controllers/studentController.js[m
+[1mindex 5fec9cb..894eaaa 100644[m
+[1m--- a/backend/controllers/studentController.js[m
+[1m+++ b/backend/controllers/studentController.js[m
+[36m@@ -52,5 +52,5 @@[m [mexport const uploadResume = async (req, res) => {[m
+       res.status(500).json({ message: 'Failed to upload resume' });[m
+     }[m
+   };[m
+[31m-  module.exports = { uploadResume };[m
+[32m+[m[32m  // module.exports = { uploadResume };[m
+ [m
+[1mdiff --git a/frontend-vite/src/pages/StudentManagement.jsx b/frontend-vite/src/pages/StudentManagement.jsx[m
+[1mindex a4bb9bc..379d8e3 100644[m
+[1m--- a/frontend-vite/src/pages/StudentManagement.jsx[m
+[1m+++ b/frontend-vite/src/pages/StudentManagement.jsx[m
+[36m@@ -4,7 +4,6 @@[m [mimport MainLayout from '../components/MainLayout';[m
+ [m
+ const StudentManagement = () => {[m
+   const [students, setStudents] = useState([]);[m
+[31m-  const [resumeFile, setResumeFile] = useState({});[m
+   const [formData, setFormData] = useState({[m
+     name: '',[m
+     email: '',[m
+[36m@@ -23,12 +22,10 @@[m [mconst StudentManagement = () => {[m
+       if (Array.isArray(res.data)) {[m
+         setStudents(res.data);[m
+       } else {[m
+[31m-        console.error('Expected array of students, got:', res.data);[m
+         setStudents([]);[m
+       }[m
+     } catch (err) {[m
+       console.error('Error fetching students:', err);[m
+[31m-      setStudents([]);[m
+     }[m
+   };[m
+ [m
+[36m@@ -54,7 +51,6 @@[m [mconst StudentManagement = () => {[m
+   const handleSubmit = async (e) => {[m
+     e.preventDefault();[m
+     const token = localStorage.getItem('token');[m
+[31m-[m
+     try {[m
+       if (editingId) {[m
+         await axios.put(`http://localhost:5000/api/students/${editingId}`, formData, {[m
+[36m@@ -73,14 +69,14 @@[m [mconst StudentManagement = () => {[m
+   };[m
+ [m
+   const handleEdit = (id) => {[m
+[31m-    const selectedStudent = students.find((s) => s._id === id);[m
+[31m-    if (selectedStudent) {[m
+[32m+[m[32m    const selected = students.find((s) => s._id === id);[m
+[32m+[m[32m    if (selected) {[m
+       setFormData({[m
+[31m-        name: selectedStudent.name,[m
+[31m-        email: selectedStudent.email,[m
+[31m-        loginId: selectedStudent.loginId,[m
+[32m+[m[32m        name: selected.name,[m
+[32m+[m[32m        email: selected.email,[m
+[32m+[m[32m        loginId: selected.loginId,[m
+         password: '',[m
+[31m-        role: selectedStudent.role,[m
+[32m+[m[32m        role: selected.role,[m
+       });[m
+       setEditingId(id);[m
+     }[m
+[36m@@ -100,20 +96,18 @@[m [mconst StudentManagement = () => {[m
+ [m
+   const handleResumeUpload = async (id, file) => {[m
+     if (!file) return;[m
+[31m-[m
+[31m-    const formData = new FormData();[m
+[31m-    formData.append('resume', file);[m
+[32m+[m[32m    const data = new FormData();[m
+[32m+[m[32m    data.append('resume', file);[m
+ [m
+     try {[m
+       const token = localStorage.getItem('token');[m
+[31m-      await axios.post(`http://localhost:5000/api/students/${id}/resume`, formData, {[m
+[32m+[m[32m      await axios.post(`http://localhost:5000/api/students/${id}/resume`, data, {[m
+         headers: {[m
+           Authorization: `Bearer ${token}`,[m
+           'Content-Type': 'multipart/form-data',[m
+         },[m
+       });[m
+[31m-[m
+[31m-      fetchStudents(); // Refresh list[m
+[32m+[m[32m      fetchStudents();[m
+     } catch (err) {[m
+       console.error('Resume upload failed:', err);[m
+     }[m
+[36m@@ -176,7 +170,7 @@[m [mconst StudentManagement = () => {[m
+           <div className="flex gap-4">[m
+             <button[m
+               type="submit"[m
+[31m-              className="bg-[#007f8f] text-white px-6 py-3 rounded font-semibold hover:bg-[#006673] transition duration-200"[m
+[32m+[m[32m              className="bg-[#007f8f] text-white px-6 py-3 rounded font-semibold hover:bg-[#006673]"[m
+             >[m
+               {editingId ? 'Update' : 'Register'}[m
+             </button>[m
+[36m@@ -197,7 +191,7 @@[m [mconst StudentManagement = () => {[m
+         {students.length === 0 ? ([m
+           <p className="text-gray-500 italic">No students registered yet.</p>[m
+         ) : ([m
+[31m-          <table className="w-full border text-left text-sm">[m
+[32m+[m[32m          <table className="w-full border text-sm">[m
+             <thead className="bg-[#e0f7fa] text-[#007f8f]">[m
+               <tr>[m
+                 <th className="p-3 border">Name</th>[m
+[36m@@ -217,17 +211,19 @@[m [mconst StudentManagement = () => {[m
+                   <td className="p-3 border capitalize">{student.role}</td>[m
+                   <td className="p-3 border">[m
+                     {student.resume ? ([m
+[31m-                      <a[m
+[31m-                        href={`http://localhost:5000/${student.resume}`}[m
+[31m-                        target="_blank"[m
+[31m-                        rel="noopener noreferrer"[m
+[31m-                        className="text-blue-600 underline"[m
+[31m-                        download[m
+[31m-                      >[m
+[31m-                        Download[m
+[31m-                      </a>[m
+[32m+[m[32m                      <div className="flex flex-col gap-1">[m
+[32m+[m[32m                        <a[m
+[32m+[m[32m                          href={`http://localhost:5000/${student.resume}`}[m
+[32m+[m[32m                          target="_blank"[m
+[32m+[m[32m                          rel="noopener noreferrer"[m
+[32m+[m[32m                          className="text-blue-600 underline"[m
+[32m+[m[32m                          download[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                          Download[m
+[32m+[m[32m                        </a>[m
+[32m+[m[32m                      </div>[m
+                     ) : ([m
+[31m-                      'Not Uploaded'[m
+[32m+[m[32m                      <span className="italic text-gray-500">Not Uploaded</span>[m
+                     )}[m
+                     <input[m
+                       type="file"[m

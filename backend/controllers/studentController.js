@@ -52,5 +52,5 @@ export const uploadResume = async (req, res) => {
       res.status(500).json({ message: 'Failed to upload resume' });
     }
   };
-  module.exports = { uploadResume };
+  // module.exports = { uploadResume };
 
