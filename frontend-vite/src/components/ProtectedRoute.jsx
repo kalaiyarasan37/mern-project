@@ -1,19 +1,31 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import LoadingSpinner from './LoadingSpinner';
 
-const ProtectedRoute = ({ element, allowedRoles }) => {
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
+const ProtectedRoute = ({ allowedRoles }) => {
+  const { isAuthenticated, user, loading } = useAuth();
 
-  if (!token) {
-    return <Navigate to="/login" replace />; // Redirect to login if not authenticated
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
-  if (!allowedRoles.includes(role)) {
-    return <Navigate to="/" replace />; // Redirect to home if unauthorized
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
-  return element;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate 
+      to="/unauthorized" 
+      replace
+      state={{
+        requiredRole: allowedRoles.join(' or '),
+        from: location
+      }}
+    />;
+  }
+
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
